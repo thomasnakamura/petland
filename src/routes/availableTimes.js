@@ -13,8 +13,8 @@ router.get('/', async (req, res) => {
         const firstEmployeeHour = getFirstHour(employees)
         const lastEmployeeHour = getLastHour(employees)
         
-        const firstHour = getTime(firstEmployeeHour.startsAt)
-        const lastHour = getTime(lastEmployeeHour.finishesAt)
+        const firstHour = getTimestamp(firstEmployeeHour.startsAt)
+        const lastHour = getTimestamp(lastEmployeeHour.finishesAt)
         
         let availableTimes = {}
         const d = new Date(firstHour)
@@ -23,23 +23,23 @@ router.get('/', async (req, res) => {
 
         do {
             d.setMinutes(d.getMinutes() + 30)
-            
+
             currentTime = `${d.getHours().toString().padStart(2, 0)}:${d.getMinutes().toString().padStart(2, 0)}`
 
             availableTimes[currentTime] = numberOfEmployees
             
-        } while(getTime(currentTime) < lastHour)
+        } while(getTimestamp(currentTime) < lastHour)
 
         const employeesSchedules = await Promise.all(employees.map(employee => getAppointment(employee.id)))
 
         employeesSchedules.forEach(employeeSchedule => employeeSchedule.forEach( schedule => {
 
-            const start = getTime(schedule.startsAt)
-            const finish = getTime(schedule.finishesAt)
+            const start = getTimestamp(schedule.startsAt)
+            const finish = getTimestamp(schedule.finishesAt)
 
             for (const time in availableTimes) {
 
-                if(getTime(time) >= start && getTime(time) <= finish) {
+                if(getTimestamp(time) >= start && getTimestamp(time) <= finish) {
                     availableTimes[time] -= 1
                 }
             }
@@ -55,25 +55,24 @@ router.get('/', async (req, res) => {
 });
 
 async function getAppointment(id){
-
     const { data: { appointments } } = await axios.get(`${key}/employee/${id}/appointments`)
 
     return appointments
 }
 
-function getTime(date){
+function getTimestamp(date){
     const dt = new Date(0)
     dt.setHours(...date.split(':'))
     return dt.getTime()
 }
 
 function getFirstHour(employees){
-    return employees.reduce((p, c) => getTime(p.startsAt) > getTime(c.startsAt) ? c : p)
+    return employees.reduce((p, c) => getTimestamp(p.startsAt) > getTimestamp(c.startsAt) ? c : p)
 
 }
 
 function getLastHour(employees){
-    return employees.reduce((p, c) => getTime(p.finishesAt) > getTime(c.finishesAt) ? c : p)
+    return employees.reduce((p, c) => getTimestamp(p.finishesAt) > getTimestamp(c.finishesAt) ? c : p)
 
 }
 
