@@ -72,7 +72,7 @@ function getFirstHour(employees){
 }
 
 function getLastHour(employees){
-    return employees.reduce((p, c) => getTimestamp(p.finishesAt) > getTimestamp(c.finishesAt) ? c : p)
+    return employees.reduce((p, c) => getTimestamp(p.finishesAt) < getTimestamp(c.finishesAt) ? c : p)
 
 }
 
